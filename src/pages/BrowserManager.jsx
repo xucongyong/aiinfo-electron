@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import apiClient from '@services/apiClient.js'
+import apiClient from '@/services/apiClient.js'
 
 const BrowserManager = () => {
   const [browsers, setBrowsers] = useState([])

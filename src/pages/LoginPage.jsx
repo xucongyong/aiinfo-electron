@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import apiClient from '@services/apiClient.js';
+import apiClient from '@/services/apiClient.js';
 // We'll use these components from our new UI library
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
