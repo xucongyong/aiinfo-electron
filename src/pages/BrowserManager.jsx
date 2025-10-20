@@ -1,10 +1,61 @@
 import { useState, useEffect } from 'react'
-import apiClient from './apiClient.js'
+import apiClient from './apiClient.js' // 你的 API 客户端
+import {
+  Button
+} from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog" // 替换你的 Modal
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select" // 替换你的 select
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Badge } from "@/components/ui/badge" // 替换你的 status-badge
+import {
+  Globe,
+  Plus,
+  Edit,
+  Trash2,
+  Play,
+  X,
+  LogOut,
+  Loader2
+} from "lucide-react" // 引入图标
 
-const BrowserManager = () => {
+// 假设你从父组件传入 onLogout 函数
+const BrowserManager = ({ onLogout }) => {
   const [browsers, setBrowsers] = useState([])
   const [runningInstances, setRunningInstances] = useState([])
   const [loading, setLoading] = useState(false)
+  
+  // --- shadcn/ui 弹窗状态管理 ---
+  // 我们仍然使用你原有的 showModal 状态来控制 Dialog
   const [showModal, setShowModal] = useState(false)
   const [editingBrowser, setEditingBrowser] = useState(null)
   const [formData, setFormData] = useState({
@@ -14,6 +65,13 @@ const BrowserManager = () => {
     proxy: '',
     notes: ''
   })
+
+  // --- 你的所有逻辑函数 (useEffect, getBrowsers, saveBrowser, etc.) ---
+  // --- 保持不变，这里省略了，因为它们功能完好 ---
+
+  // [从你文件中复制 useEffect, getBrowsers, getRunningInstances, 
+  //  saveBrowser, deleteBrowser, launchBrowser, closeBrowser]
+  // ... (逻辑代码和你的文件一样)
 
   // --- 关键修复 ---
   // 使用 useEffect 来确保组件加载时自动获取数据
@@ -257,232 +315,258 @@ const deleteBrowser = async (browserId) => {
       };
   }
 
+
+  // --- 以下是全新的 shadcn/ui 视图 ---
   return (
-    <div>
-       <div className="page-header">
-        <h1 className="page-title">🌐 指纹浏览器管理</h1>
-        <button
-          onClick={openAddModal}
-          className="btn btn-primary"
-        >
-          ➕ 新增浏览器配置
-        </button>
-        {/* 新增的登出按钮 */}
-            <button
-              className="btn btn-secondary"
-            >
-              登出
-            </button>
-      </div>
+    <div className="p-6 space-y-6">
+       <header className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">🌐 指纹浏览器管理</h1>
+        <div className="flex items-center gap-2">
+            <Button onClick={openAddModal}>
+              <Plus className="w-4 h-4 mr-2" /> 新增浏览器配置
+            </Button>
+            <Button variant="outline" onClick={onLogout}>
+              <LogOut className="w-4 h-4 mr-2" /> 登出
+            </Button>
+        </div>
+      </header>
 
-      <div className="card">
-        <h2 className="card-title">
-          浏览器配置 ({browsers.length} 个)
-        </h2>
-
-        {browsers.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-state-icon">🌐</div>
-            <div className="empty-state-text">暂无浏览器配置</div>
-            <div className="empty-state-hint">点击"新增浏览器配置"开始</div>
-          </div>
-        ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>名称</th>
-                <th>分辨率</th>
-                <th>代理</th>
-                <th>创建时间</th>
-                <th>状态</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              {browsers.map(browser => {
-                const isRunning = isBrowserRunning(browser.browser_id);
-                const displayData = getDisplayData(browser);
-                return (
-                  <tr key={browser.browser_id}>
-                    <td><strong>{browser.name}</strong></td>
-                    <td>{displayData.viewport}</td>
-                    <td>{displayData.proxy}</td>
-                    <td>{new Date(browser.created_at).toLocaleString()}</td>
-                    <td>
-                      <span className={`status-badge ${isRunning ? 'status-running' : 'status-stopped'}`}>
-                        {isRunning ? '运行中' : '已停止'}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="button-group">
-                        <button
+      <Card>
+        <CardHeader>
+          <CardTitle>浏览器配置 ({browsers.length} 个)</CardTitle>
+          <CardDescription>管理你所有的浏览器环境配置</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {browsers.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Globe className="w-16 h-16 text-muted-foreground" />
+              <p className="mt-4 text-lg text-muted-foreground">暂无浏览器配置</p>
+              <p className="text-sm text-muted-foreground">点击"新增浏览器配置"来创建第一个</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>名称</TableHead>
+                  <TableHead>分辨率</TableHead>
+                  <TableHead>代理</TableHead>
+                  <TableHead>创建时间</TableHead>
+                  <TableHead>状态</TableHead>
+                  <TableHead className="text-right">操作</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {browsers.map(browser => {
+                  const isRunning = isBrowserRunning(browser.browser_id);
+                  const displayData = getDisplayData(browser);
+                  return (
+                    <TableRow key={browser.browser_id}>
+                      <TableCell className="font-medium">{browser.name}</TableCell>
+                      <TableCell>{displayData.viewport}</TableCell>
+                      <TableCell>{displayData.proxy}</TableCell>
+                      <TableCell>{new Date(browser.created_at).toLocaleString()}</TableCell>
+                      <TableCell>
+                        <Badge variant={isRunning ? "default" : "outline"} className={isRunning ? "bg-green-600 text-white" : ""}>
+                          {isRunning ? '运行中' : '已停止'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right space-x-2">
+                        <Button
+                          size="sm"
                           onClick={() => launchBrowser(browser.browser_id)}
                           disabled={loading || isRunning}
-                          className="btn btn-success"
+                          variant="secondary"
                         >
-                          {isRunning ? '🟢 运行中' : '▶️ 启动'}
-                        </button>
-                        <button
+                          <Play className="w-4 h-4 mr-2" />
+                          {isRunning ? '运行中' : '启动'}
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
                           onClick={() => editBrowser(browser)}
-                          className="btn btn-secondary"
                         >
-                          ✏️ 编辑
-                        </button>
-                        <button
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="text-red-500 hover:text-red-600"
                           onClick={() => deleteBrowser(browser.browser_id)}
                           disabled={isRunning}
-                          className="btn btn-danger"
                         >
-                          🗑️ 删除
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        )}
-      </div>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
       
       {/* 运行中的实例 */}
-      <div className="card">
-        <h2 className="card-title">
-          运行中的浏览器实例 ({runningInstances.length} 个)
-        </h2>
+      <Card>
+        <CardHeader>
+          <CardTitle>运行中的浏览器实例 ({runningInstances.length} 个)</CardTitle>
+          <CardDescription>查看和管理当前正在运行的浏览器</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {runningInstances.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Globe className="w-16 h-16 text-muted-foreground" />
+              <p className="mt-4 text-lg text-muted-foreground">暂无运行的浏览器实例</p>
+              <p className="text-sm text-muted-foreground">从上方配置列表启动一个浏览器</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>实例ID</TableHead>
+                  <TableHead>配置名称</TableHead>
+                  <TableHead>状态</TableHead>
+                  <TableHead>启动时间</TableHead>
+                  <TableHead className="text-right">操作</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {runningInstances.map(instance => (
+                  <TableRow key={instance.accountId}>
+                    <TableCell className="font-medium">{instance.accountId}</TableCell>
+                    <TableCell>
+                      {browsers.find(b => b.browser_id === instance.accountId)?.name || '未知配置'}
+                    </TableCell>
+                    <TableCell>
+                      <Badge className="bg-green-600 text-white">运行中</Badge>
+                    </TableCell>
+                    <TableCell>{instance.startTime ? new Date(instance.startTime).toLocaleString() : '-'}</TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => closeBrowser(instance.accountId)}
+                        disabled={loading}
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        关闭
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
 
-        {runningInstances.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-state-icon">🌐</div>
-            <div className="empty-state-text">暂无运行的浏览器实例</div>
-            <div className="empty-state-hint">选择一个浏览器配置并点击"启动"开始</div>
-          </div>
-        ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>实例ID</th>
-                <th>配置名称</th>
-                <th>状态</th>
-                <th>启动时间</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              {runningInstances.map(instance => (
-                <tr key={instance.accountId}>
-                  <td><strong>{instance.accountId}</strong></td>
-                  <td>
-                    {browsers.find(b => b.browser_id === instance.accountId)?.name || '未知配置'}
-                  </td>
-                  <td>
-                    <span className="status-badge status-running">运行中</span>
-                  </td>
-                  <td>{instance.startTime ? new Date(instance.startTime).toLocaleString() : '-'}</td>
-                  <td>
-                    <button
-                      onClick={() => closeBrowser(instance.accountId)}
-                      disabled={loading}
-                      className="btn btn-danger"
-                    >
-                      ❌ 关闭
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-
-      {/* --- 关键修复 --- */}
-      {/* 新增/编辑模态框 */}
-      {showModal && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h3 className="modal-title">
+      {/* 新增/编辑模态框 (使用 Dialog) */}
+      <Dialog open={showModal} onOpenChange={setShowModal}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>
               {editingBrowser ? '编辑浏览器配置' : '新增浏览器配置'}
-            </h3>
-
-            <div className="form-group">
-              <label className="form-label">配置名称 *</label>
-              <input
-                type="text"
+            </DialogTitle>
+            <DialogDescription>
+              {editingBrowser ? '修改配置详情' : '创建一个新的浏览器环境配置'}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {/* 表单内容 */}
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                配置名称 *
+              </Label>
+              <Input
+                id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
-                className="form-input"
+                className="col-span-3"
                 placeholder="例如：营销账号1"
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label">User Agent</label>
-              <input
-                type="text"
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="userAgent" className="text-right">
+                User Agent
+              </Label>
+              <Input
+                id="userAgent"
                 value={formData.userAgent}
                 onChange={(e) => setFormData({...formData, userAgent: e.target.value})}
-                className="form-input"
+                className="col-span-3"
                 placeholder="留空使用默认 User Agent"
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label">分辨率</label>
-              <select
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="viewport" className="text-right">
+                分辨率
+              </Label>
+              <Select
                 value={formData.viewport}
-                onChange={(e) => setFormData({...formData, viewport: e.target.value})}
-                className="form-select"
+                onValueChange={(value) => setFormData({...formData, viewport: value})}
               >
-                <option value="1920x1080">1920x1080</option>
-                <option value="1366x768">1366x768</option>
-                <option value="1440x900">1440x900</option>
-                <option value="1536x864">1536x864</option>
-                <option value="1280x720">1280x720</option>
-              </select>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="选择分辨率" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1920x1080">1920x1080</SelectItem>
+                  <SelectItem value="1366x768">1366x768</SelectItem>
+                  <SelectItem value="1440x900">1440x900</SelectItem>
+                  <SelectItem value="1536x864">1536x864</SelectItem>
+                  <SelectItem value="1280x720">1280x720</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            <div className="form-group">
-              <label className="form-label">代理设置</label>
-              <input
-                type="text"
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="proxy" className="text-right">
+                代理设置
+              </Label>
+              <Input
+                id="proxy"
                 value={formData.proxy}
                 onChange={(e) => setFormData({...formData, proxy: e.target.value})}
-                className="form-input"
+                className="col-span-3"
                 placeholder="例如：http://127.0.0.1:8080"
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label">备注</label>
-              <textarea
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="notes" className="text-right">
+                备注
+              </Label>
+              <Textarea
+                id="notes"
                 value={formData.notes}
                 onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                className="form-textarea"
+                className="col-span-3"
                 placeholder="添加备注信息..."
               />
             </div>
-
-            <div className="modal-footer">
-              <button
-                onClick={() => setShowModal(false)}
-                className="btn btn-secondary"
-              >
-                取消
-              </button>
-              <button
-                onClick={saveBrowser}
-                className="btn btn-primary"
-                disabled={loading}
-              >
-                {loading ? '保存中...' : (editingBrowser ? '更新' : '保存')}
-              </button>
-            </div>
           </div>
-        </div>
-      )}
+          
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowModal(false)}
+            >
+              取消
+            </Button>
+            <Button
+              onClick={saveBrowser}
+              disabled={loading}
+            >
+              {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {loading ? '保存中...' : (editingBrowser ? '更新' : '保存')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
 
 export default BrowserManager
-
