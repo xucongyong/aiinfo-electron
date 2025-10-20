@@ -15,21 +15,18 @@ var savedCookies= []
 // --- 关键修改：重构所有 IPC Handler ---
 // 我们不再在 whenReady 里注册，而是导出一个函数
 export function registerIpcHandlers() {
-  console.log('registerIpcHandlers init')
-  ipcMain.on('ping', () => {
-      console.log('pong')
-    })
 
   ipcMain.on('auth:set-token', (event, token) => {
-      console.log('🚀 [Main] 成功接收并存储了 Auth Token');
+      console.log('[Main] 成功接收并存储了 Auth Token');
       globalAuthToken = token;
     });
 
   /**
    * 监听来自渲染器的 'auth:clear-token' 事件
    */
+
   ipcMain.on('auth:clear-token', () => {
-    console.log('🚀 [Main] 已清除 Auth Token (用户登出)');
+    console.log('[Main] 已清除 Auth Token (用户登出)');
     globalAuthToken = null;
   });
 
@@ -130,14 +127,8 @@ const playwrightManager = async (browserId, token=null) => {
     };
 
     const page = await context.newPage(); // 从上下文中创建新页面
-    // --- 修改代码结束 ---
 
     await page.goto('https://abrahamjuliot.github.io/creepjs/', {
-      waitUntil: 'domcontentloaded',
-      timeout: 30000
-    });
-    
-    await page.goto('https://httpbin.org/cookies/set?test_user=user123&session_id=abcde', {
       waitUntil: 'domcontentloaded',
       timeout: 30000
     });
@@ -188,7 +179,6 @@ const saveCookiesForBrowser = async (browserId) => {
 
   } catch (error) {
     console.log(error)
-    // 错误已在 mainApiClient 中打印
   }
 };
 

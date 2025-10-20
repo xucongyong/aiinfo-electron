@@ -164,10 +164,6 @@ const playwrightManager = async (browserId, token = null) => {
       waitUntil: "domcontentloaded",
       timeout: 3e4
     });
-    await page.goto("https://httpbin.org/cookies/set?test_user=user123&session_id=abcde", {
-      waitUntil: "domcontentloaded",
-      timeout: 3e4
-    });
     runningBrowsers.set(browserId, browserData);
     const saveInterval = setInterval(() => {
       saveCookiesForBrowser(browserId);
