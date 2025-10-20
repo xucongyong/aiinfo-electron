@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron'
-import { firefox } from 'playwright-core'
-import { launchOptions } from 'camoufox-js'
+//import { firefox } from 'playwright-core'
+// import { launchOptions } from 'camoufox-js'
 // 假设 mainApiClient.js 在同一个目录下，或者调整路径
 import { mainApiClient } from './mainApiClient.js' 
 

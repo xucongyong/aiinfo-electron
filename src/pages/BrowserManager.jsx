@@ -211,7 +211,9 @@ const deleteBrowser = async (browserId) => {
 
   // 启动浏览器
   const launchBrowser = async (browserId) => {
+    window.electron.ipcRenderer.send('ping')
     console.log('🚀 [前端] 开始启动浏览器:', { browserId });
+    console.log(window.electron)
     console.log(window.ipcRenderer)
     console.log(window.api)
     setLoading(true)

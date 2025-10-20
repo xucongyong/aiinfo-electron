@@ -19,12 +19,7 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
     return ipcRenderer.invoke(channel, ...omit)
   },
 
-  
   // You can expose other APTs you need here.
   // ...
 })
-
-
-console.log('🔧 [Preload ts] Force exposed APIs to window as backup')
-
-console.log('🔧 [Preload ts] Preload script completed')
+console.log('ipc')
