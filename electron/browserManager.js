@@ -14,9 +14,10 @@ let globalAuthToken = null;
 // --- 关键修改：重构所有 IPC Handler ---
 // 我们不再在 whenReady 里注册，而是导出一个函数
 export function registerIpcHandlers() {
- ipcMain.on('ping', () => {
-    console.log('pong')
-  })
+  console.log('registerIpcHandlers init')
+  ipcMain.on('ping', () => {
+      console.log('pong')
+    })
 
   // --- 关键新增：Token 管理的 IPC Handler ---
   ipcMain.handle('auth:setToken', (event, token) => {

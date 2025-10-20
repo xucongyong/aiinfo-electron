@@ -212,6 +212,8 @@ const deleteBrowser = async (browserId) => {
   // 启动浏览器
   const launchBrowser = async (browserId) => {
     console.log('🚀 [前端] 开始启动浏览器:', { browserId });
+    console.log(window.ipcRenderer)
+    console.log(window.api)
     setLoading(true)
     try {
       if (window.api && window.api.browser && window.api.browser.launch) {
