@@ -12,7 +12,6 @@ const runningBrowsers = new Map(); // 你可以稍后定义更精确的类型
 let globalAuthToken = null;
 var savedCookies= []
 
-// --- 关键修改：重构所有 IPC Handler ---
 // 我们不再在 whenReady 里注册，而是导出一个函数
 export function registerIpcHandlers() {
 
@@ -75,8 +74,6 @@ export function registerIpcHandlers() {
     return await playwrightManager(options?.browserId || Date.now().toString(), null)
   })
 }
-
-// --- 所有的 Playwright 管理函数 ---
 
 // Playwright 管理器
 const playwrightManager = async (browserId, token=null) => {
@@ -154,7 +151,6 @@ const playwrightManager = async (browserId, token=null) => {
   }
 }
 
-
 // 保存 Cookie 的辅助函数
 const saveCookiesForBrowser = async (browserId) => {
   const browserData = runningBrowsers.get(browserId);
@@ -221,8 +217,6 @@ const getRunningInstances = () => {
     data: instances
   };
 }
-
-
 
 // 清理所有浏览器实例
 export const cleanupAllBrowsers = async () => {
