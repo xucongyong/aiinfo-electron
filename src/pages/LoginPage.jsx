@@ -28,6 +28,7 @@ const LoginPage = ({ onLoginSuccess }) => {
             } else {
                 response = await apiClient.login(username, password);
                 if (response.success && response.token) {
+                    window.api.auth.setToken(response.token);
                     onLoginSuccess(response.token);
                 }
             }

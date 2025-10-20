@@ -11,6 +11,7 @@ function App() {
         const storedToken = localStorage.getItem('jwt_token');
         if (storedToken) {
             setToken(storedToken);
+            window.api.auth.setToken(storedToken);
             // 你可以在这里加一个API调用来验证token并获取用户信息
         }
     }, []);

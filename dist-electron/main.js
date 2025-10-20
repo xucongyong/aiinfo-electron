@@ -73,15 +73,13 @@ function registerIpcHandlers() {
   ipcMain.on("ping", () => {
     console.log("pong");
   });
-  ipcMain.handle("auth:setToken", (event, token) => {
-    console.log("🔒 [Main] 收到并设置了全局认证 Token。");
+  ipcMain.on("auth:set-token", (event, token) => {
+    console.log("🚀 [Main] 成功接收并存储了 Auth Token");
     globalAuthToken = token;
-    return { success: true };
   });
-  ipcMain.handle("auth:clearToken", () => {
-    console.log("🔒 [Main] 全局认证 Token 已清除。");
+  ipcMain.on("auth:clear-token", () => {
+    console.log("🚀 [Main] 已清除 Auth Token (用户登出)");
     globalAuthToken = null;
-    return { success: true };
   });
   ipcMain.handle("browser:launch", async (event, browserId) => {
     console.log("[主进程] 收到浏览器启动请求:", { browserId });
@@ -129,6 +127,7 @@ const playwrightManager = async (browserId, token = null) => {
       const browserProfile = await mainApiClient.getBrowserProfile(browserId, token);
       console.log(" 实际获取的 launch_config 值:", browserProfile.launch_config);
       launch_config = JSON.parse(browserProfile.launch_config);
+      console.log(launch_config);
     } catch (parseError) {
       console.error("JSON 解析失败！原始值:", parseError.configValue);
       console.error("解析错误详情:", parseError.message);

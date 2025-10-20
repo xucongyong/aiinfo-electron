@@ -19,17 +19,17 @@ export function registerIpcHandlers() {
       console.log('pong')
     })
 
-  // --- 关键新增：Token 管理的 IPC Handler ---
-  ipcMain.handle('auth:setToken', (event, token) => {
-    console.log('🔒 [Main] 收到并设置了全局认证 Token。');
-    globalAuthToken = token;
-    return { success: true };
-  });
+  ipcMain.on('auth:set-token', (event, token) => {
+      console.log('🚀 [Main] 成功接收并存储了 Auth Token');
+      globalAuthToken = token;
+    });
 
-  ipcMain.handle('auth:clearToken', () => {
-    console.log('🔒 [Main] 全局认证 Token 已清除。');
+  /**
+   * 监听来自渲染器的 'auth:clear-token' 事件
+   */
+  ipcMain.on('auth:clear-token', () => {
+    console.log('🚀 [Main] 已清除 Auth Token (用户登出)');
     globalAuthToken = null;
-    return { success: true };
   });
 
   // --- 关键修改：browser:launch 不再接收 token 参数 ---
@@ -96,6 +96,7 @@ const playwrightManager = async (browserId, token=null) => {
       const browserProfile = await mainApiClient.getBrowserProfile(browserId, token);
       console.log(' 实际获取的 launch_config 值:', browserProfile.launch_config); 
       launch_config = JSON.parse(browserProfile.launch_config);
+      console.log(launch_config)
     } catch (parseError) {
       console.error('JSON 解析失败！原始值:', (parseError).configValue); // 假设你能拿到原始值
       console.error('解析错误详情:', parseError.message);

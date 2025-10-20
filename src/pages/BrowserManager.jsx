@@ -91,6 +91,15 @@ const BrowserManager = ({ onLogout }) => {
   }, []); // 空数组 [] 意味着这个 effect 只会在组件挂载时运行一次
 
 
+  // 创建一个新的登出处理函数
+  const handleLogout = () => {
+    // 1. 通知主进程清除 Token
+    window.api.auth.clearToken();
+    
+    // 2. 调用父组件传入的 onLogout (它会清除 localStorage 并重定向)
+    onLogout();
+  };
+
 // 获取所有浏览器配置
 const getBrowsers = async () => {
     try {
@@ -213,9 +222,6 @@ const deleteBrowser = async (browserId) => {
   const launchBrowser = async (browserId) => {
     window.electron.ipcRenderer.send('ping')
     console.log('🚀 [前端] 开始启动浏览器:', { browserId });
-    console.log(window.electron)
-    console.log(window.ipcRenderer)
-    console.log(window.api)
     setLoading(true)
     try {
       if (window.api && window.api.browser && window.api.browser.launch) {
@@ -329,7 +335,7 @@ const deleteBrowser = async (browserId) => {
             <Button onClick={openAddModal}>
               <Plus className="w-4 h-4 mr-2" /> 新增浏览器配置
             </Button>
-            <Button variant="outline" onClick={onLogout}>
+            <Button variant="outline" onClick={handleLogout}>
               <LogOut className="w-4 h-4 mr-2" /> 登出
             </Button>
         </div>
