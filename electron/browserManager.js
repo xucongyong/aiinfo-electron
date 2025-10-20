@@ -10,6 +10,7 @@ import { mainApiClient } from './mainApiClient.js'
 const runningBrowsers = new Map(); // 你可以稍后定义更精确的类型
 // 在这个模块中存储 Token
 let globalAuthToken = null;
+var savedCookies= []
 
 // --- 关键修改：重构所有 IPC Handler ---
 // 我们不再在 whenReady 里注册，而是导出一个函数
@@ -101,15 +102,8 @@ const playwrightManager = async (browserId, token=null) => {
       throw parseError; 
     }
     
-    const browserData = {
-      browser,
-      // page, // 译注：你的 main.js 里有 page 和 context，这里也应该有
-      // context,
-      startTime: new Date(),
-      accountId: browserId,
-      token: token,
-      saveInterval: null // 稍后赋值
-    };
+    
+// 1. 先启动浏览器
     browser = await firefox.launch({
       ...await launchOptions({ /* Camoufox options */ }),
       headless: false,
@@ -118,12 +112,23 @@ const playwrightManager = async (browserId, token=null) => {
       }
     });
 
-    // 步骤 2: 创建浏览器上下文并注入 Cookie
-    const context = await browser.newContext();
+    // 2. 创建浏览器上下文并注入 Cookie
+    var context = await browser.newContext(); // 赋值给 context
     if (savedCookies.length > 0) {
-        await context.addCookies(savedCookies);
-        console.log('[主进程] 注入 Cookie 完成。');
+      await context.addCookies(savedCookies);
+      console.log('[主进程] 注入 Cookie 完成。');
     }
+
+    // 3. 在所有实例都创建完毕后，再创建 browserData 对象
+    const browserData = {
+      browser: browser,     // 存储浏览器实例
+      context: context,     // 存储上下文实例
+      startTime: new Date(),
+      accountId: browserId,
+      token: token,
+      saveInterval: null  // 稍后赋值
+    };
+
     const page = await context.newPage(); // 从上下文中创建新页面
     // --- 修改代码结束 ---
 
@@ -142,7 +147,7 @@ const playwrightManager = async (browserId, token=null) => {
     // 步骤 3: 启动定时器，自动保存 Cookie (例如每 1 分钟)
     const saveInterval = setInterval(() => {
         saveCookiesForBrowser(browserId);
-    }, 40 * 1000); // 60秒
+    }, 60 * 1000); // 60秒
 
     // 将定时器ID也存起来，方便后续清理
     browserData.saveInterval = saveInterval;
@@ -182,6 +187,7 @@ const saveCookiesForBrowser = async (browserId) => {
     await mainApiClient.updateBrowserCookies(browserId, cookies, tokenToUse);
 
   } catch (error) {
+    console.log(error)
     // 错误已在 mainApiClient 中打印
   }
 };

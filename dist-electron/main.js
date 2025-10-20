@@ -70,6 +70,7 @@ const mainApiClient = {
 };
 const runningBrowsers = /* @__PURE__ */ new Map();
 let globalAuthToken = null;
+var savedCookies = [];
 function registerIpcHandlers() {
   console.log("registerIpcHandlers init");
   ipcMain.on("ping", () => {
@@ -133,16 +134,6 @@ const playwrightManager = async (browserId, token = null) => {
       console.error("解析错误详情:", parseError.message);
       throw parseError;
     }
-    const browserData = {
-      browser,
-      // page, // 译注：你的 main.js 里有 page 和 context，这里也应该有
-      // context,
-      startTime: /* @__PURE__ */ new Date(),
-      accountId: browserId,
-      token,
-      saveInterval: null
-      // 稍后赋值
-    };
     browser = await firefox.launch({
       ...await launchOptions({
         /* Camoufox options */
@@ -152,11 +143,22 @@ const playwrightManager = async (browserId, token = null) => {
         server: launch_config.proxy
       }
     });
-    const context = await browser.newContext();
+    var context = await browser.newContext();
     if (savedCookies.length > 0) {
       await context.addCookies(savedCookies);
       console.log("[主进程] 注入 Cookie 完成。");
     }
+    const browserData = {
+      browser,
+      // 存储浏览器实例
+      context,
+      // 存储上下文实例
+      startTime: /* @__PURE__ */ new Date(),
+      accountId: browserId,
+      token,
+      saveInterval: null
+      // 稍后赋值
+    };
     const page = await context.newPage();
     await page.goto("https://abrahamjuliot.github.io/creepjs/", {
       waitUntil: "domcontentloaded",
@@ -169,7 +171,7 @@ const playwrightManager = async (browserId, token = null) => {
     runningBrowsers.set(browserId, browserData);
     const saveInterval = setInterval(() => {
       saveCookiesForBrowser(browserId);
-    }, 40 * 1e3);
+    }, 60 * 1e3);
     browserData.saveInterval = saveInterval;
     console.log(`🎉 [主进程] 浏览器 ${browserId} 完全启动成功!`);
     return {
@@ -200,6 +202,7 @@ const saveCookiesForBrowser = async (browserId) => {
     const cookies = await context.cookies();
     await mainApiClient.updateBrowserCookies(browserId, cookies, tokenToUse);
   } catch (error) {
+    console.log(error);
   }
 };
 const closeBrowser = async (browserId) => {
