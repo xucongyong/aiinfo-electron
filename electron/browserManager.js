@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron'
-//import { firefox } from 'playwright-core'
-// import { launchOptions } from 'camoufox-js'
+import { firefox } from 'playwright-core'
+import { launchOptions } from 'camoufox-js'
 // 假设 mainApiClient.js 在同一个目录下，或者调整路径
 import { mainApiClient } from './mainApiClient.js' 
 
@@ -87,14 +87,12 @@ const playwrightManager = async (browserId, token=null) => {
   let browser;
 
   try {
-    var savedCookies = []; // 最好给个类型
     var launch_config = {};
     try {
       // 注意：这里 token 可能是 null，需要处理
       if (!token) throw new Error("Token is null in playwrightManager");
       
       const browserProfile = await mainApiClient.getBrowserProfile(browserId, token);
-      console.log(' 实际获取的 launch_config 值:', browserProfile.launch_config); 
       launch_config = JSON.parse(browserProfile.launch_config);
       console.log(launch_config)
     } catch (parseError) {
@@ -102,9 +100,7 @@ const playwrightManager = async (browserId, token=null) => {
       console.error('解析错误详情:', parseError.message);
       throw parseError; 
     }
-    // ... (剩余的 playwrightManager 代码)
     
-    // 确保 browserData 的类型（如果需要）
     const browserData = {
       browser,
       // page, // 译注：你的 main.js 里有 page 和 context，这里也应该有
@@ -114,11 +110,51 @@ const playwrightManager = async (browserId, token=null) => {
       token: token,
       saveInterval: null // 稍后赋值
     };
-    // ...
-    // ... (剩余的 playwrightManager 代码)
+    browser = await firefox.launch({
+      ...await launchOptions({ /* Camoufox options */ }),
+      headless: false,
+      proxy: {
+        server: launch_config.proxy
+      }
+    });
+
+    // 步骤 2: 创建浏览器上下文并注入 Cookie
+    const context = await browser.newContext();
+    if (savedCookies.length > 0) {
+        await context.addCookies(savedCookies);
+        console.log('[主进程] 注入 Cookie 完成。');
+    }
+    const page = await context.newPage(); // 从上下文中创建新页面
+    // --- 修改代码结束 ---
+
+    await page.goto('https://abrahamjuliot.github.io/creepjs/', {
+      waitUntil: 'domcontentloaded',
+      timeout: 30000
+    });
+    
+    await page.goto('https://httpbin.org/cookies/set?test_user=user123&session_id=abcde', {
+      waitUntil: 'domcontentloaded',
+      timeout: 30000
+    });
+
+    runningBrowsers.set(browserId, browserData);
+
+    // 步骤 3: 启动定时器，自动保存 Cookie (例如每 1 分钟)
+    const saveInterval = setInterval(() => {
+        saveCookiesForBrowser(browserId);
+    }, 40 * 1000); // 60秒
+
+    // 将定时器ID也存起来，方便后续清理
+    browserData.saveInterval = saveInterval;
+    
+    console.log(`🎉 [主进程] 浏览器 ${browserId} 完全启动成功!`);
+
+    return { success: true, /* ... */ };
+
   } catch (error) {
-    console.error(`[主进程] 浏览器启动异常:`, error.message);
-    return { success: false, error: `主进程异常: ${error.message}` };
+    console.log(error)
+    // ... (错误处理部分不变) ...
+    return { success: false, /* ... */ };
   }
 }
 

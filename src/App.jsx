@@ -33,7 +33,7 @@ function App() {
     }
 
     // 传入一个 onLogout 函数给 BrowserManager
-    return <BrowserManager onLogout={handleLogout} />;
+    return <BrowserManager anager onLogout={handleLogout} />;
 }
 
 export default App;

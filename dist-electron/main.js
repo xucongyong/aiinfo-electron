@@ -2,6 +2,8 @@ import { ipcMain, app, BrowserWindow } from "electron";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { firefox } from "playwright-core";
+import { launchOptions } from "camoufox-js";
 const API_BASE_URL = "https://aiinfo-api.hackx.dpdns.org";
 const mainFetch = async (url, token, options = {}) => {
   if (!token) {
@@ -120,12 +122,10 @@ function registerIpcHandlers() {
 const playwrightManager = async (browserId, token = null) => {
   let browser;
   try {
-    var savedCookies = [];
     var launch_config = {};
     try {
       if (!token) throw new Error("Token is null in playwrightManager");
       const browserProfile = await mainApiClient.getBrowserProfile(browserId, token);
-      console.log(" 实际获取的 launch_config 值:", browserProfile.launch_config);
       launch_config = JSON.parse(browserProfile.launch_config);
       console.log(launch_config);
     } catch (parseError) {
@@ -143,9 +143,45 @@ const playwrightManager = async (browserId, token = null) => {
       saveInterval: null
       // 稍后赋值
     };
+    browser = await firefox.launch({
+      ...await launchOptions({
+        /* Camoufox options */
+      }),
+      headless: false,
+      proxy: {
+        server: launch_config.proxy
+      }
+    });
+    const context = await browser.newContext();
+    if (savedCookies.length > 0) {
+      await context.addCookies(savedCookies);
+      console.log("[主进程] 注入 Cookie 完成。");
+    }
+    const page = await context.newPage();
+    await page.goto("https://abrahamjuliot.github.io/creepjs/", {
+      waitUntil: "domcontentloaded",
+      timeout: 3e4
+    });
+    await page.goto("https://httpbin.org/cookies/set?test_user=user123&session_id=abcde", {
+      waitUntil: "domcontentloaded",
+      timeout: 3e4
+    });
+    runningBrowsers.set(browserId, browserData);
+    const saveInterval = setInterval(() => {
+      saveCookiesForBrowser(browserId);
+    }, 40 * 1e3);
+    browserData.saveInterval = saveInterval;
+    console.log(`🎉 [主进程] 浏览器 ${browserId} 完全启动成功!`);
+    return {
+      success: true
+      /* ... */
+    };
   } catch (error) {
-    console.error(`[主进程] 浏览器启动异常:`, error.message);
-    return { success: false, error: `主进程异常: ${error.message}` };
+    console.log(error);
+    return {
+      success: false
+      /* ... */
+    };
   }
 };
 const saveCookiesForBrowser = async (browserId) => {
