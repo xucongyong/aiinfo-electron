@@ -33,11 +33,11 @@ export function registerIpcHandlers() {
 
   // --- 关键修改：browser:launch 不再接收 token 参数 ---
   ipcMain.handle('browser:launch', async (event, browserId) => {
-    console.log('🚀 [主进程] 收到浏览器启动请求:', { browserId });
+    console.log('[主进程] 收到浏览器启动请求:', { browserId });
     
     // --- 关键修改：使用全局 Token ---
     if (!globalAuthToken) {
-      console.error('❌ [主进程] 启动失败: 主进程未收到认证 Token。');
+      console.error('[主进程] 启动失败: 主进程未收到认证 Token。');
       return { success: false, error: '主进程未认证，请重新登录。' };
     }
 
@@ -46,7 +46,7 @@ export function registerIpcHandlers() {
       const result = await playwrightManager(browserId, globalAuthToken)
       return result
     } catch (error) {
-      console.error('❌ [主进程] 浏览器启动异常:', error)
+      console.error('[主进程] 浏览器启动异常:', error)
       return { success: false, error: `主进程异常: ${error.message}` }
     }
   })
@@ -57,7 +57,7 @@ export function registerIpcHandlers() {
       const result = await closeBrowser(browserId)
       return result
     } catch (error) {
-      console.error('❌ [主进程] 浏览器关闭异常:', error)
+      console.error('[主进程] 浏览器关闭异常:', error)
       return { success: false, error: `主进程异常: ${error.message}` }
     }
   })
@@ -67,7 +67,7 @@ export function registerIpcHandlers() {
       const result = getRunningInstances()
       return result
     } catch (error) {
-      console.error('❌ [主进程] 获取运行实例异常:', error)
+      console.error('[主进程] 获取运行实例异常:', error)
       return { success: false, error: `主进程异常: ${error.message}` }
     }
   })
@@ -86,18 +86,18 @@ const playwrightManager = async (browserId, token=null) => {
   let browser;
 
   try {
-    var savedCookies: any[] = []; // 最好给个类型
-    var launch_config: any = {};
+    var savedCookies = []; // 最好给个类型
+    var launch_config = {};
     try {
       // 注意：这里 token 可能是 null，需要处理
       if (!token) throw new Error("Token is null in playwrightManager");
       
       const browserProfile = await mainApiClient.getBrowserProfile(browserId, token);
-      console.log('🔍 实际获取的 launch_config 值:', browserProfile.launch_config); 
+      console.log(' 实际获取的 launch_config 值:', browserProfile.launch_config); 
       launch_config = JSON.parse(browserProfile.launch_config);
-    } catch (parseError: any) {
-      console.error('❌ JSON 解析失败！原始值:', (parseError as any).configValue); // 假设你能拿到原始值
-      console.error('❌ 解析错误详情:', parseError.message);
+    } catch (parseError) {
+      console.error('JSON 解析失败！原始值:', (parseError).configValue); // 假设你能拿到原始值
+      console.error('解析错误详情:', parseError.message);
       throw parseError; 
     }
     // ... (剩余的 playwrightManager 代码)
@@ -110,12 +110,12 @@ const playwrightManager = async (browserId, token=null) => {
       startTime: new Date(),
       accountId: browserId,
       token: token,
-      saveInterval: null as any // 稍后赋值
+      saveInterval: null // 稍后赋值
     };
     // ...
     // ... (剩余的 playwrightManager 代码)
-  } catch (error: any) {
-    console.error(`❌ [主进程] 浏览器启动异常:`, error.message);
+  } catch (error) {
+    console.error(`[主进程] 浏览器启动异常:`, error.message);
     return { success: false, error: `主进程异常: ${error.message}` };
   }
 }
@@ -170,7 +170,7 @@ const closeBrowser = async (browserId) => {
     return { success: true, message: `浏览器 ${browserId} 已关闭` };
 
   } catch (error) {
-    console.error(`❌ [主进程] 关闭浏览器 ${browserId} 异常:`, error.message)
+    console.error(`[主进程] 关闭浏览器 ${browserId} 异常:`, error.message)
     return { success: false, error: error.message }
   }
 }

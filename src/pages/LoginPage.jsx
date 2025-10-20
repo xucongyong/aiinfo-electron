@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import apiClient from '@/services/apiClient.js';
+import apiClient from "./apiClient.js"; // 正确
 // We'll use these components from our new UI library
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "../components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
 
 const LoginPage = ({ onLoginSuccess }) => {
     const [isRegistering, setIsRegistering] = useState(false);

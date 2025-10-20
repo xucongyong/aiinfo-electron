@@ -3,9 +3,16 @@ import path from 'node:path'
 import electron from 'vite-plugin-electron/simple'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite' // import here
+//import electron from 'vite-plugin-electron'
+import renderer from 'vite-plugin-electron-renderer'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
   plugins: [
     tailwindcss(),
     react(),
@@ -13,6 +20,24 @@ export default defineConfig({
       main: {
         // Shortcut of `build.lib.entry`.
         entry: 'electron/main.ts',
+        // --- 关键修改在这里 ---
+        // 添加这个 'vite' 块来配置主进程的打包
+        vite: {
+          build: {
+            rollupOptions: {
+              // 告诉 Rollup (用于生产环境) 这些是外部模块
+              external: [
+                'electron',
+                'playwright-core',
+                'camoufox-js'
+              ]
+            }
+          },
+          // 告诉 Vite (用于开发环境) 不要预捆绑这些
+          optimizeDeps: {
+            exclude: ['playwright-core', 'camoufox-js']
+          }
+        }
       },
       preload: {
         // Shortcut of `build.rollupOptions.input`.
@@ -28,9 +53,5 @@ export default defineConfig({
         : {},
     }),
   ],
-    resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
-  },
+
 })
