@@ -1,11 +1,11 @@
 import { app, BrowserWindow } from 'electron'
-import { createRequire } from 'node:module'
+//import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 
-const require = createRequire(import.meta.url)
+//const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-import { registerIpcHandlers, cleanupAllBrowsers } from './browserManager'
+import { registerIpcHandlers } from './browserManager.js'
 
 // The built directory structure
 // ├─┬─┬ dist
@@ -56,7 +56,6 @@ app.on('window-all-closed', () => {
 
 app.on('activate', () => {
   // On OS X it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow()
   }
