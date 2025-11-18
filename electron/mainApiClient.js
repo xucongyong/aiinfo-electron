@@ -2,13 +2,7 @@
 
 const API_BASE_URL = 'https://aiinfo-api.hackx.dpdns.org';
 
-/**
- * 封装主进程的 fetch 请求
- * @param {string} url - 目标 URL
- * @param {string} token - 认证 Token
- * @param {object} options - Fetch 选项
- * @returns {Promise<object>} - 解析后的 JSON 结果
- */
+
 const mainFetch = async (url, token, options = {}) => {
     if (!token) {
         throw new Error('未提供身份验证令牌 (token)');

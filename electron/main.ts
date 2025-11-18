@@ -7,6 +7,17 @@ import path from 'node:path'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 import { registerIpcHandlers } from './browserManager.js'
 
+import log from 'electron-log';
+
+// (可选) 配置日志级别和文件
+log.transports.file.level = 'info'; // 'info', 'warn', 'error' 等
+log.transports.file.fileName = 'main.log'; // 日志文件名
+
+// 你甚至可以覆盖 console.log 和 console.error
+// 这样你就不需要修改代码中所有的 console.log 了
+Object.assign(console, log.functions);
+
+
 // The built directory structure
 // ├─┬─┬ dist
 // │ │ └── index.html
