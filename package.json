@@ -14,7 +14,7 @@
   },
   "build": {
     "appId": "com.aiinfo.browser",
-    "productName": "aiinfo-browser",
+    "productName": "x-browser",
     "asar": true,
     "asarUnpack": ["node_modules/better-sqlite3/**/*"],
     "files": [
