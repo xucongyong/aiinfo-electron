@@ -6,7 +6,7 @@
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && electron-builder",
+    "build": "tsc && vite build &&DEBUG=electron-builder electron-builder",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "rebuild": "electron-rebuild",
@@ -14,9 +14,14 @@
   },
   "build": {
     "appId": "com.aiinfo.browser",
-    "productName": "aiinfo-browser",
+    "productName": "x-browser",
     "asar": true,
-    "asarUnpack": ["node_modules/better-sqlite3/**/*"],
+    "asarUnpack": [
+      "node_modules/better-sqlite3/**/*",
+      "**/node_modules/impit/**",
+      "**/node_modules/@impit/**",
+      "**/node_modules/camoufox-js/**"
+    ],
     "files": [
       "dist-electron/**/*",
       "dist/**/*"
@@ -42,7 +47,7 @@
     "fingerprint-generator": "^2.1.76",
     "generative-bayesian-network": "^2.1.76",
     "header-generator": "^2.1.76",
-    "impit": "^0.6.1",
+    "impit": "^0.7.1",
     "js-yaml": "^4.1.0",
     "language-subtag-registry": "^0.3.23",
     "language-tags": "^2.1.0",
@@ -61,6 +66,7 @@
     "xml2js": "^0.6.2"
   },
   "devDependencies": {
+    "@electron/rebuild": "^4.0.1",
     "@types/node": "^24.8.1",
     "@types/react": "^18.2.64",
     "@types/react-dom": "^18.2.21",
@@ -68,7 +74,7 @@
     "@typescript-eslint/parser": "^7.1.1",
     "@vitejs/plugin-react": "^4.2.1",
     "electron": "^30.0.1",
-    "electron-builder": "^26.0.12",
+    "electron-builder": "^26.2.0",
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
@@ -80,3 +86,4 @@
     "vite-plugin-electron-renderer": "^0.14.5"
   }
 }
+
