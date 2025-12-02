@@ -11,6 +11,12 @@
     "dist",
     "dist-electron"
   ],
+  "asarUnpack": [
+    "node_modules/better-sqlite3/**/*",
+    "**/node_modules/impit/**",
+    "**/node_modules/@impit/**",
+    "**/node_modules/camoufox-js/**"
+  ],
   "mac": {
     "target": [
       "dmg"
