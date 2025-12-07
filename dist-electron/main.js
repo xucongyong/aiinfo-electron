@@ -1,15 +1,15 @@
 var st = Object.defineProperty;
 var it = (l, c, o) => c in l ? st(l, c, { enumerable: !0, configurable: !0, writable: !0, value: o }) : l[c] = o;
 var h = (l, c, o) => it(l, typeof c != "symbol" ? c + "" : c, o);
-import at, { ipcMain as x, app as _, BrowserWindow as Je } from "electron";
+import at, { ipcMain as x, app as R, BrowserWindow as Je } from "electron";
 import { fileURLToPath as ct } from "node:url";
-import O from "node:path";
+import A from "node:path";
 import { firefox as lt } from "playwright-core";
 import { launchOptions as ut } from "camoufox-js";
 import D from "path";
 import ft from "child_process";
 import j from "os";
-import R from "fs";
+import $ from "fs";
 import pt from "util";
 import Ve from "events";
 import ht from "http";
@@ -69,7 +69,7 @@ const gt = "https://aiinfo-api.hackx.dpdns.org", ge = async (l, c, o = {}) => {
     }
   }
 }, F = /* @__PURE__ */ new Map();
-let $ = null;
+let C = null;
 const yt = (l, c) => {
   let o = null;
   return (...s) => {
@@ -85,14 +85,14 @@ const yt = (l, c) => {
 };
 function vt() {
   x.on("auth:set-token", (l, c) => {
-    console.log("[Main] 成功接收并存储了 Auth Token"), $ = c;
+    console.log("[Main] 成功接收并存储了 Auth Token"), C = c;
   }), x.on("auth:clear-token", () => {
-    console.log("[Main] 已清除 Auth Token (用户登出)"), $ = null;
+    console.log("[Main] 已清除 Auth Token (用户登出)"), C = null;
   }), x.handle("browser:launch", async (l, c) => {
-    if (console.log("[主进程] 收到浏览器启动请求:", { browserId: c }), !$)
+    if (console.log("[主进程] 收到浏览器启动请求:", { browserId: c }), !C)
       return console.error("[主进程] 启动失败: 主进程未收到认证 Token。"), { success: !1, error: "主进程未认证，请重新登录。" };
     try {
-      return await ye(c, $);
+      return await ye(c, C);
     } catch (o) {
       return console.error("[主进程] 浏览器启动异常:", o), { success: !1, error: `主进程异常: ${o.message}` };
     }
@@ -208,7 +208,7 @@ const ye = async (l, c = null) => {
 function Et(l) {
   return l && l.__esModule && Object.prototype.hasOwnProperty.call(l, "default") ? l.default : l;
 }
-var C = { exports: {} }, k = { exports: {} }, me;
+var _ = { exports: {} }, k = { exports: {} }, me;
 function Ge() {
   return me || (me = 1, function(l) {
     let c = {};
@@ -706,7 +706,7 @@ var V, Pe;
 function Ft() {
   if (Pe) return V;
   Pe = 1;
-  const l = R, c = D;
+  const l = $, c = D;
   V = {
     findAndReadPackageJson: o,
     tryReadJsonAt: s
@@ -1065,7 +1065,7 @@ var Y, De;
 function Rt() {
   if (De) return Y;
   De = 1;
-  const l = R, c = j, o = D, s = Ge();
+  const l = $, c = j, o = D, s = Ge();
   let i = !1, r = !1;
   Y = {
     initialize({
@@ -1677,7 +1677,7 @@ var re, Ne;
 function Ze() {
   if (Ne) return re;
   Ne = 1;
-  const l = Ve, c = R, o = j;
+  const l = Ve, c = $, o = j;
   class s extends l {
     constructor({
       path: t,
@@ -1802,7 +1802,7 @@ var oe, Ie;
 function Tt() {
   if (Ie) return oe;
   Ie = 1;
-  const l = Ve, c = R, o = D, s = Ze(), i = jt();
+  const l = Ve, c = $, o = D, s = Ze(), i = jt();
   class r extends l {
     constructor() {
       super();
@@ -1860,7 +1860,7 @@ var se, qe;
 function Nt() {
   if (qe) return se;
   qe = 1;
-  const l = R, c = j, o = D, s = Tt(), { transform: i } = L(), { removeStyles: r } = he(), {
+  const l = $, c = j, o = D, s = Tt(), { transform: i } = L(), { removeStyles: r } = he(), {
     format: e,
     concatFirstStringElements: t
   } = Xe(), { toString: n } = T();
@@ -2129,33 +2129,33 @@ function Mt() {
   }), ue;
 }
 const zt = typeof process > "u" || process.type === "renderer" || process.type === "worker", Wt = typeof process == "object" && process.type === "browser";
-zt ? (Ge(), C.exports = xt()) : Wt ? C.exports = qt() : C.exports = Mt();
-var Ut = C.exports;
-const de = /* @__PURE__ */ Et(Ut), et = O.dirname(ct(import.meta.url));
+zt ? (Ge(), _.exports = xt()) : Wt ? _.exports = qt() : _.exports = Mt();
+var Ut = _.exports;
+const de = /* @__PURE__ */ Et(Ut), et = A.dirname(ct(import.meta.url));
 de.transports.file.level = "info";
 de.transports.file.fileName = "main.log";
 Object.assign(console, de.functions);
-process.env.APP_ROOT = O.join(et, "..");
-const pe = process.env.VITE_DEV_SERVER_URL, or = O.join(process.env.APP_ROOT, "dist-electron"), tt = O.join(process.env.APP_ROOT, "dist");
-process.env.VITE_PUBLIC = pe ? O.join(process.env.APP_ROOT, "public") : tt;
-let A;
+process.env.APP_ROOT = A.join(et, "..");
+const pe = process.env.VITE_DEV_SERVER_URL, or = A.join(process.env.APP_ROOT, "dist-electron"), tt = A.join(process.env.APP_ROOT, "dist");
+process.env.VITE_PUBLIC = pe ? A.join(process.env.APP_ROOT, "public") : tt;
+let O;
 function rt() {
-  A = new Je({
-    icon: O.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
+  O = new Je({
+    icon: A.join(process.env.VITE_PUBLIC, "icon.png"),
     webPreferences: {
-      preload: O.join(et, "preload.mjs")
+      preload: A.join(et, "preload.mjs")
     }
-  }), A.webContents.on("did-finish-load", () => {
-    A == null || A.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
-  }), pe ? A.loadURL(pe) : A.loadFile(O.join(tt, "index.html"));
+  }), process.platform === "darwin" && R.dock.setIcon(A.join(process.env.VITE_PUBLIC, "icon.png")), O.webContents.on("did-finish-load", () => {
+    O == null || O.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
+  }), pe ? O.loadURL(pe) : O.loadFile(A.join(tt, "index.html"));
 }
-_.on("window-all-closed", () => {
-  process.platform !== "darwin" && (_.quit(), A = null);
+R.on("window-all-closed", () => {
+  process.platform !== "darwin" && (R.quit(), O = null);
 });
-_.on("activate", () => {
+R.on("activate", () => {
   Je.getAllWindows().length === 0 && rt();
 });
-_.whenReady().then(() => {
+R.whenReady().then(() => {
   vt(), rt();
 });
 export {

@@ -38,11 +38,15 @@ let win: BrowserWindow | null
 
 function createWindow() {
   win = new BrowserWindow({
-    icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
+    icon: path.join(process.env.VITE_PUBLIC, 'icon.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
     },
   });
+
+  if (process.platform === 'darwin') {
+    app.dock.setIcon(path.join(process.env.VITE_PUBLIC, 'icon.png'));
+  }
 
   // Test active push message to Renderer-process.
   win.webContents.on('did-finish-load', () => {
