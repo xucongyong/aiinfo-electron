@@ -2,7 +2,7 @@ import { ipcMain } from 'electron'
 import { firefox } from 'playwright-core'
 import { launchOptions } from 'camoufox-js'
 // 假设 mainApiClient.js 在同一个目录下，或者调整路径
-import { mainApiClient } from './mainApiClient.js' 
+import { mainApiClient } from './mainApiClient.js'
 
 // --- 所有核心逻辑都移到这里 ---
 
@@ -22,36 +22,40 @@ const debounce = (fn, delay) => {
   }
 }
 
-const load_cookie=async(page,cookies)=>{
-        typeof cookies === 'string' ? JSON.parse(cookies) : cookies;
-      if (cookies && cookies.length > 0) {
-        // Filter out expired cookies
-        const validCookies = cookies.filter(cookie => {
-            if (cookie.expires && cookie.expires !== -1) {
-                return (cookie.expires * 1000) > Date.now();
-            }
-            return true; // Keep session cookies
-        });
+const load_cookie = async (page, cookies) => {
+  // 确保 cookies 是数组
+  const validCookiesList = typeof cookies === 'string'
+    ? JSON.parse(cookies)
+    : cookies;
 
-        if (validCookies.length > 0) {
-            // Playwright migration: 向 context 添加 cookies
-            await page.context().addCookies(validCookies);
-            console.log(`Loaded ${validCookies.length} valid cookies from`);
-            return true;
-        } else {
-            console.log('All cookies in the file were expired. Starting fresh.');
-            return false;
-        }
+  if (validCookiesList && validCookiesList.length > 0) {
+    // Filter out expired cookies
+    const validCookies = validCookiesList.filter(cookie => {
+      if (cookie.expires && cookie.expires !== -1) {
+        return (cookie.expires * 1000) > Date.now();
+      }
+      return true; // Keep session cookies
+    });
+
+    if (validCookies.length > 0) {
+      // Playwright migration: 向 context 添加 cookies
+      await page.context().addCookies(validCookies);
+      console.log(`[load_cookie] Loaded ${validCookies.length} valid cookies.`);
+      return true;
+    } else {
+      console.log('[load_cookie] All cookies were expired. Starting fresh.');
+      return false;
     }
+  }
 }
 
 // 我们不再在 whenReady 里注册，而是导出一个函数
 export function registerIpcHandlers() {
 
   ipcMain.on('auth:set-token', (event, token) => {
-      console.log('[Main] 成功接收并存储了 Auth Token');
-      globalAuthToken = token;
-    });
+    console.log('[Main] 成功接收并存储了 Auth Token');
+    globalAuthToken = token;
+  });
 
   /**
    * 监听来自渲染器的 'auth:clear-token' 事件
@@ -65,7 +69,7 @@ export function registerIpcHandlers() {
   // --- 关键修改：browser:launch 不再接收 token 参数 ---
   ipcMain.handle('browser:launch', async (event, browserId) => {
     console.log('[主进程] 收到浏览器启动请求:', { browserId });
-    
+
     // --- 关键修改：使用全局 Token ---
     if (!globalAuthToken) {
       console.error('[主进程] 启动失败: 主进程未收到认证 Token。');
@@ -109,34 +113,34 @@ export function registerIpcHandlers() {
 }
 
 // Playwright 管理器
-const playwrightManager = async (browserId, token=null) => {
+const playwrightManager = async (browserId, token = null) => {
   // ... (从 main.js 完整复制 playwrightManager 的代码)
   // ... 注意：确保 import { mainApiClient } 路径正确
   let browser;
   var browserProfile;
   try {
     var launch_config = {};
-// 定义一个局部变量来存当前浏览器的 Cookie
-    let cookiesToInject = []; 
+    // 定义一个局部变量来存当前浏览器的 Cookie
+    let cookiesToInject = [];
 
     try {
       console.log('init start playwrightManager!')
       if (!token) throw new Error("Token is null in playwrightManager");
-      
+
       browserProfile = await mainApiClient.getBrowserProfile(browserId, token);
-      console.log('browserProfile:',browserProfile)
+      console.log('browserProfile:', browserProfile)
       launch_config = JSON.parse(browserProfile.launch_config);
       // --- 修复开始: 解析并获取 Cookie ---
       if (browserProfile.cookies) {
         try {
-           // 数据库里存的通常是字符串，需要 parse，如果是对象则直接用
-           cookiesToInject = typeof browserProfile.cookies === 'string' 
-             ? JSON.parse(browserProfile.cookies) 
-             : browserProfile.cookies;
-             
-           console.log(`[主进程] 获取到 ${cookiesToInject.length} 个 Cookie 准备注入`);
+          // 数据库里存的通常是字符串，需要 parse，如果是对象则直接用
+          cookiesToInject = typeof browserProfile.cookies === 'string'
+            ? JSON.parse(browserProfile.cookies)
+            : browserProfile.cookies;
+
+          console.log(`[主进程] 获取到 ${cookiesToInject.length} 个 Cookie 准备注入`);
         } catch (e) {
-           console.error('[主进程] Cookie 解析失败:', e);
+          console.error('[主进程] Cookie 解析失败:', e);
         }
       }
       // --- 修复结束 ---
@@ -144,16 +148,38 @@ const playwrightManager = async (browserId, token=null) => {
     } catch (parseError) {
       console.error('JSON 解析失败！原始值:', (parseError).configValue); // 假设你能拿到原始值
       console.error('解析错误详情:', parseError.message);
-      throw parseError; 
+      throw parseError;
     }
-    
-    
-// 1. 先启动浏览器
+
+
+    // 1. 先启动浏览器
+    const cfOptions = await launchOptions({ /* Camoufox options */ });
     browser = await firefox.launch({
-      ...await launchOptions({ /* Camoufox options */ }),
+      ...cfOptions,
       headless: false,
+      humanize: true, // Enable human-like mouse movement
+      geoip: false, // ⚠️ DISABLE to fix mmdb crash
+      locale: 'zh-CN',
+      os: 'macos', // Or 'windows' depending on preference, sticking to macos for consistency
+      fonts: ['SimSun'],
       proxy: {
         server: launch_config.proxy
+      },
+      firefoxUserPrefs: {
+        ...cfOptions.firefoxUserPrefs,
+        // 关键修复：关闭隔离以允许 Tab 间共享 Cookie
+        'privacy.firstparty.isolate': false,
+        'privacy.userContext.enabled': false,
+        'network.cookie.cookieBehavior': 0,
+        // --- 增强修改：更激进地关闭隐私隔离 ---
+        'privacy.resistFingerprinting': false,
+        'privacy.trackingprotection.enabled': false,
+        'browser.privatebrowsing.autostart': false,
+        'dom.storage.enabled': true,
+        // --- Round 3: The Hammer ---
+        'privacy.partition.network_state': false,
+        'privacy.partition.serviceWorkers': false,
+        'browser.cache.disk.enable': false,
       }
     });
 
@@ -161,7 +187,7 @@ const playwrightManager = async (browserId, token=null) => {
     var context = await browser.newContext(); // 赋值给 context
     if (cookiesToInject && cookiesToInject.length > 0) {
       await context.addCookies(cookiesToInject);
-      console.log('[主进程] 注入 Cookie 完成。');
+      console.log(`[主进程] 注入 Cookie 完成。Sample: ${cookiesToInject[0]?.name}`);
     }
 
     // 3. 在所有实例都创建完毕后，再创建 browserData 对象
@@ -180,19 +206,42 @@ const playwrightManager = async (browserId, token=null) => {
 
     // --- 关键修改：事件监听 ---
     // 对每一个新打开的页面 (Page) 进行监听
-    context.on('page', (page) => {
-        // 当页面跳转/加载完成时，极大概率 Cookie 变了 (如登录成功跳转)
-        page.on('framenavigated', () => {
-            browserData.triggerSave();
-        });
-        
-        // 如果页面关闭，也检查一次
-        page.on('close', () => {
-            browserData.triggerSave();
-        });
+    context.on('page', async (page) => {
+      console.log('[主进程] New page created in context.');
+
+      // --- The Hammer: 强制重注 Cookie ---
+      if (cookiesToInject && cookiesToInject.length > 0) {
+        try {
+          console.log(`[主进程] Attempting re-injection of ${cookiesToInject.length} cookies...`);
+          await context.addCookies(cookiesToInject);
+          console.log(`[主进程] 🔨 Forced cookie re-injection for new page.`);
+        } catch (e) {
+          console.error(`[主进程] Re-injection failed: ${e.message}`);
+        }
+      } else {
+        console.log(`[主进程] No cookies to re-inject. (cookiesToInject is empty or null)`);
+      }
+
+      // 调试：打印当新页面打开时的 Cookie 数量
+      page.context().cookies().then(cookies => {
+        console.log(`[主进程] New page sees ${cookies.length} cookies.`);
+        if (cookies.length > 0) {
+          console.log(`[主进程] First cookie seen: ${cookies[0].name}`);
+        }
+      });
+
+      // 当页面跳转/加载完成时，极大概率 Cookie 变了 (如登录成功跳转)
+      page.on('framenavigated', () => {
+        browserData.triggerSave();
+      });
+
+      // 如果页面关闭，也检查一次
+      page.on('close', () => {
+        browserData.triggerSave();
+      });
     });
     const page = await context.newPage(); // 从上下文中创建新页面
-    await load_cookie(page,cookiesToInject)
+    await load_cookie(page, cookiesToInject)
     await page.goto('https://abrahamjuliot.github.io/creepjs/', {
       waitUntil: 'domcontentloaded',
       timeout: 30000
@@ -202,10 +251,10 @@ const playwrightManager = async (browserId, token=null) => {
 
     // 步骤 3: 启动定时器，自动保存 Cookie (例如每 1 分钟)
     browserData.saveInterval = setInterval(() => {
-        saveCookiesForBrowser(browserId);
+      saveCookiesForBrowser(browserId);
     }, 5 * 60 * 1000);
 
-    
+
     console.log(`🎉 [主进程] 浏览器 ${browserId} 完全启动成功!`);
 
     return { success: true, /* ... */ };
@@ -227,7 +276,7 @@ const saveCookiesForBrowser = async (browserId) => {
     if (!context) return;
 
     const cookies = await context.cookies();
-    
+
     // --- 差异对比逻辑 ---
     // 简单排序以保证序列化一致性
     cookies.sort((a, b) => (a.name > b.name) ? 1 : -1);
@@ -235,11 +284,11 @@ const saveCookiesForBrowser = async (browserId) => {
 
     // 如果哈希/字符串一致，说明没变化，直接返回
     if (browserData.lastCookieStr === currentCookieStr) {
-      return; 
+      return;
     }
 
     await mainApiClient.updateBrowserCookies(browserId, cookies, browserData.token);
-    
+
     // 更新缓存
     browserData.lastCookieStr = currentCookieStr;
     console.log(`[主进程] ♻️ Cookie 发生变动，已同步至服务器 - ${browserId}`);
@@ -258,9 +307,9 @@ const closeBrowser = async (browserId) => {
     }
 
     if (browserData.saveInterval) {
-        clearInterval(browserData.saveInterval);
+      clearInterval(browserData.saveInterval);
     }
-    
+
     console.log(`[主进程] 正在为 ${browserId} 执行最后一次 Cookie 保存...`);
     // --- 关键修改 10: saveCookies 会自己从 map 拿 token ---
     await saveCookiesForBrowser(browserId);
