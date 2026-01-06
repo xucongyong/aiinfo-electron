@@ -190,7 +190,8 @@ const playwrightManager = async (browserId, token = null) => {
       geoip: false,
       // ⚠️ DISABLE to fix mmdb crash
       locale: "zh-CN",
-      //os: 'macos', // Or 'windows' depending on preference, sticking to macos for consistency
+      os: "macos",
+      // Or 'windows' depending on preference, sticking to macos for consistency
       fonts: [
         "SimSun",
         // Windows 宋体
@@ -243,6 +244,18 @@ const playwrightManager = async (browserId, token = null) => {
       triggerSave: debounce(() => saveCookiesForBrowser(browserId), 2e3)
     };
     runningBrowsers.set(browserId, browserData);
+    const updateCookieCache = async () => {
+      try {
+        const currentCookies = await context.cookies();
+        if (currentCookies && currentCookies.length > 0) {
+          cookiesToInject = currentCookies;
+        }
+        ;
+        browserData.triggerSave();
+      } catch (error) {
+        console.error("[主进程] Failed to update cookie cache:", error);
+      }
+    };
     context.on("page", async (page2) => {
       console.log("[主进程] New page created in context.");
       if (cookiesToInject && cookiesToInject.length > 0) {
@@ -263,10 +276,10 @@ const playwrightManager = async (browserId, token = null) => {
         }
       });
       page2.on("framenavigated", () => {
-        browserData.triggerSave();
+        updateCookieCache();
       });
       page2.on("close", () => {
-        browserData.triggerSave();
+        updateCookieCache();
       });
     });
     const page = await context.newPage();
@@ -277,7 +290,7 @@ const playwrightManager = async (browserId, token = null) => {
     });
     runningBrowsers.set(browserId, browserData);
     browserData.saveInterval = setInterval(() => {
-      saveCookiesForBrowser(browserId);
+      updateCookieCache();
     }, 5 * 60 * 1e3);
     console.log(`🎉 [主进程] 浏览器 ${browserId} 完全启动成功!`);
     return {

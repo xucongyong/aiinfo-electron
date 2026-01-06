@@ -159,7 +159,8 @@ const playwrightManager = async (browserId, token = null) => {
       headless: false,
       humanize: true, // Enable human-like mouse movement
       geoip: false, // ⚠️ DISABLE to fix mmdb crash
-      locale: 'zh-CN',//os: 'macos', // Or 'windows' depending on preference, sticking to macos for consistency
+      locale: 'zh-CN',
+      os: 'macos', // Or 'windows' depending on preference, sticking to macos for consistency
       fonts: [
         'SimSun',           // Windows 宋体
         'Microsoft YaHei',  // Windows 微软雅黑
@@ -209,6 +210,20 @@ const playwrightManager = async (browserId, token = null) => {
     };
     runningBrowsers.set(browserId, browserData);
 
+    // --- Round 4: Real-time Cookie Sync Helper ---
+    // Update local cache AND trigger remote save
+    const updateCookieCache = async () => {
+      try {
+        const currentCookies = await context.cookies();
+        if (currentCookies && currentCookies.length > 0) {
+          cookiesToInject = currentCookies;
+        };
+        browserData.triggerSave();
+      } catch (error) {
+        console.error('[主进程] Failed to update cookie cache:', error);
+      }
+    };
+
     // --- 关键修改：事件监听 ---
     // 对每一个新打开的页面 (Page) 进行监听
     context.on('page', async (page) => {
@@ -237,12 +252,14 @@ const playwrightManager = async (browserId, token = null) => {
 
       // 当页面跳转/加载完成时，极大概率 Cookie 变了 (如登录成功跳转)
       page.on('framenavigated', () => {
-        browserData.triggerSave();
+        // browserData.triggerSave(); 
+        updateCookieCache(); // Use new helper
       });
 
       // 如果页面关闭，也检查一次
       page.on('close', () => {
-        browserData.triggerSave();
+        // browserData.triggerSave();
+        updateCookieCache(); // Use new helper
       });
     });
     const page = await context.newPage(); // 从上下文中创建新页面
@@ -256,7 +273,8 @@ const playwrightManager = async (browserId, token = null) => {
 
     // 步骤 3: 启动定时器，自动保存 Cookie (例如每 1 分钟)
     browserData.saveInterval = setInterval(() => {
-      saveCookiesForBrowser(browserId);
+      updateCookieCache(); // Also update cache on interval
+      // saveCookiesForBrowser(browserId); // original
     }, 5 * 60 * 1000);
 
 
