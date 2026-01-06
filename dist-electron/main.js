@@ -190,9 +190,19 @@ const playwrightManager = async (browserId, token = null) => {
       geoip: false,
       // ⚠️ DISABLE to fix mmdb crash
       locale: "zh-CN",
-      os: "macos",
-      // Or 'windows' depending on preference, sticking to macos for consistency
-      fonts: ["SimSun"],
+      //os: 'macos', // Or 'windows' depending on preference, sticking to macos for consistency
+      fonts: [
+        "SimSun",
+        // Windows 宋体
+        "Microsoft YaHei",
+        // Windows 微软雅黑
+        "PingFang SC",
+        // macOS 苹方
+        "Hiragino Sans GB",
+        // macOS 冬青黑体
+        "sans-serif"
+        // 最终回退
+      ],
       proxy: {
         server: launch_config.proxy
       },
