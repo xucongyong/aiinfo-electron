@@ -1,7 +1,7 @@
 var st = Object.defineProperty;
 var it = (l, c, o) => c in l ? st(l, c, { enumerable: !0, configurable: !0, writable: !0, value: o }) : l[c] = o;
 var d = (l, c, o) => it(l, typeof c != "symbol" ? c + "" : c, o);
-import at, { ipcMain as F, app as $, BrowserWindow as Be } from "electron";
+import at, { ipcMain as F, app as $, BrowserWindow as Je } from "electron";
 import { fileURLToPath as ct } from "node:url";
 import A from "node:path";
 import { firefox as lt } from "playwright-core";
@@ -11,7 +11,7 @@ import ft from "child_process";
 import j from "os";
 import D from "fs";
 import pt from "util";
-import Je from "events";
+import Ve from "events";
 import ht from "http";
 import dt from "https";
 const gt = "https://aiinfo-api.hackx.dpdns.org", de = async (l, c, o = {}) => {
@@ -32,7 +32,7 @@ const gt = "https://aiinfo-api.hackx.dpdns.org", de = async (l, c, o = {}) => {
     throw new Error(`API 请求失败: ${i.status} - ${r}`);
   }
   return i.json();
-}, Ve = {
+}, He = {
   /**
    * 获取单个浏览器配置
    * @param {string} browserId 
@@ -120,7 +120,7 @@ const ge = async (l, c = null) => {
     let e = [];
     try {
       if (console.log("init start playwrightManager!"), !c) throw new Error("Token is null in playwrightManager");
-      if (s = await Ve.getBrowserProfile(l, c), console.log("browserProfile:", s), i = JSON.parse(s.launch_config), s.cookies)
+      if (s = await He.getBrowserProfile(l, c), console.log("browserProfile:", s), i = JSON.parse(s.launch_config), s.cookies)
         try {
           e = typeof s.cookies == "string" ? JSON.parse(s.cookies) : s.cookies, console.log(`[主进程] 获取到 ${e.length} 个 Cookie 准备注入`);
         } catch (p) {
@@ -188,7 +188,7 @@ const ge = async (l, c = null) => {
       lastCookieStr: "",
       // 新增：用于比对
       // 新增：防抖保存函数 (2秒防抖)
-      triggerSave: yt(() => He(l), 2e3)
+      triggerSave: yt(() => Ge(l), 2e3)
     };
     x.set(l, a);
     const u = async () => {
@@ -232,7 +232,7 @@ const ge = async (l, c = null) => {
       /* ... */
     };
   }
-}, He = async (l) => {
+}, Ge = async (l) => {
   const c = x.get(l);
   if (!(!c || !c.token))
     try {
@@ -243,14 +243,14 @@ const ge = async (l, c = null) => {
       const i = JSON.stringify(s);
       if (c.lastCookieStr === i)
         return;
-      await Ve.updateBrowserCookies(l, s, c.token), c.lastCookieStr = i, console.log(`[主进程] ♻️ Cookie 发生变动，已同步至服务器 - ${l}`);
+      await He.updateBrowserCookies(l, s, c.token), c.lastCookieStr = i, console.log(`[主进程] ♻️ Cookie 发生变动，已同步至服务器 - ${l}`);
     } catch (o) {
       console.error(`[主进程] 保存 Cookie 失败 ${l}:`, o.message);
     }
 }, wt = async (l) => {
   try {
     const c = x.get(l);
-    return c ? (c.saveInterval && clearInterval(c.saveInterval), console.log(`[主进程] 正在为 ${l} 执行最后一次 Cookie 保存...`), await He(l), await c.browser.close(), x.delete(l), { success: !0, message: `浏览器 ${l} 已关闭` }) : { success: !1, error: "实例未找到" };
+    return c ? (c.saveInterval && clearInterval(c.saveInterval), console.log(`[主进程] 正在为 ${l} 执行最后一次 Cookie 保存...`), await Ge(l), await c.browser.close(), x.delete(l), { success: !0, message: `浏览器 ${l} 已关闭` }) : { success: !1, error: "实例未找到" };
   } catch (c) {
     return console.error(`[主进程] 关闭浏览器 ${l} 异常:`, c.message), { success: !1, error: c.message };
   }
@@ -266,7 +266,7 @@ function St(l) {
   return l && l.__esModule && Object.prototype.hasOwnProperty.call(l, "default") ? l.default : l;
 }
 var k = { exports: {} }, N = { exports: {} }, ye;
-function Ge() {
+function Ye() {
   return ye || (ye = 1, function(l) {
     let c = {};
     try {
@@ -368,7 +368,7 @@ function At() {
   return q = l, q;
 }
 var z, we;
-function Ye() {
+function Qe() {
   if (we) return z;
   we = 1;
   const l = Et(), c = At(), s = class s {
@@ -710,7 +710,7 @@ function Pt() {
 var Oe;
 function Ft() {
   return Oe || (Oe = 1, function(l) {
-    const c = Ye(), o = Ot(), s = Lt(), i = Pt();
+    const c = Qe(), o = Ot(), s = Lt(), i = Pt();
     typeof process == "object" && process.type === "browser" && console.warn(
       "electron-log/renderer is loaded in the main process. It could cause unexpected behaviour."
     ), l.exports = r(), l.exports.Logger = c, l.exports.default = l.exports;
@@ -809,7 +809,7 @@ function xt() {
   return V;
 }
 var H, Pe;
-function Qe() {
+function Xe() {
   if (Pe) return H;
   Pe = 1;
   const l = ft, c = j, o = C, s = xt();
@@ -967,7 +967,7 @@ var G, Fe;
 function Ct() {
   if (Fe) return G;
   Fe = 1;
-  const l = C, c = Qe();
+  const l = C, c = Xe();
   class o extends c {
     /**
      * @param {object} options
@@ -1122,7 +1122,7 @@ var Y, xe;
 function $t() {
   if (xe) return Y;
   xe = 1;
-  const l = D, c = j, o = C, s = Ge();
+  const l = D, c = j, o = C, s = Ye();
   let i = !1, r = !1;
   Y = {
     initialize({
@@ -1443,7 +1443,7 @@ function Rt() {
   return X = l, X;
 }
 var Z, De;
-function Xe() {
+function Ze() {
   if (De) return Z;
   De = 1;
   const { transform: l } = L();
@@ -1658,7 +1658,7 @@ function kt() {
   const {
     concatFirstStringElements: l,
     format: c
-  } = Xe(), { maxDepth: o, toJSON: s } = _(), {
+  } = Ze(), { maxDepth: o, toJSON: s } = _(), {
     applyAnsiStyles: i,
     removeStyles: r
   } = pe(), { transform: t } = L(), e = {
@@ -1731,10 +1731,10 @@ function kt() {
   return te;
 }
 var re, _e;
-function Ze() {
+function Ke() {
   if (_e) return re;
   _e = 1;
-  const l = Je, c = D, o = j;
+  const l = Ve, c = D, o = j;
   class s extends l {
     constructor({
       path: e,
@@ -1838,7 +1838,7 @@ var ne, Te;
 function jt() {
   if (Te) return ne;
   Te = 1;
-  const l = Ze();
+  const l = Ke();
   class c extends l {
     clear() {
     }
@@ -1859,7 +1859,7 @@ var oe, Ne;
 function _t() {
   if (Ne) return oe;
   Ne = 1;
-  const l = Je, c = D, o = C, s = Ze(), i = jt();
+  const l = Ve, c = D, o = C, s = Ke(), i = jt();
   class r extends l {
     constructor() {
       super();
@@ -1920,7 +1920,7 @@ function Tt() {
   const l = D, c = j, o = C, s = _t(), { transform: i } = L(), { removeStyles: r } = pe(), {
     format: t,
     concatFirstStringElements: e
-  } = Xe(), { toString: n } = _();
+  } = Ze(), { toString: n } = _();
   se = u;
   const a = new s();
   function u(p, { registry: h = a, externalApi: b } = {}) {
@@ -2109,10 +2109,10 @@ function It() {
   return ae;
 }
 var ce, ze;
-function Ke() {
+function et() {
   if (ze) return ce;
   ze = 1;
-  const l = Ye(), c = Dt(), o = Rt(), s = kt(), i = Tt(), r = Nt(), t = It();
+  const l = Qe(), c = Dt(), o = Rt(), s = kt(), i = Tt(), r = Nt(), t = It();
   ce = e;
   function e({ dependencies: n, initializeFn: a }) {
     var f;
@@ -2148,7 +2148,7 @@ var le, We;
 function Mt() {
   if (We) return le;
   We = 1;
-  const l = at, c = Ct(), { initialize: o } = $t(), s = Ke(), i = new c({ electron: l }), r = s({
+  const l = at, c = Ct(), { initialize: o } = $t(), s = et(), i = new c({ electron: l }), r = s({
     dependencies: { externalApi: i },
     initializeFn: o
   });
@@ -2180,43 +2180,42 @@ var ue, Ue;
 function qt() {
   if (Ue) return ue;
   Ue = 1;
-  const l = Qe(), c = Ke(), o = new l();
+  const l = Xe(), c = et(), o = new l();
   return ue = c({
     dependencies: { externalApi: o }
   }), ue;
 }
 const zt = typeof process > "u" || process.type === "renderer" || process.type === "worker", Wt = typeof process == "object" && process.type === "browser";
-zt ? (Ge(), k.exports = Ft()) : Wt ? k.exports = Mt() : k.exports = qt();
+zt ? (Ye(), k.exports = Ft()) : Wt ? k.exports = Mt() : k.exports = qt();
 var Ut = k.exports;
-const he = /* @__PURE__ */ St(Ut), et = A.dirname(ct(import.meta.url));
+const he = /* @__PURE__ */ St(Ut), tt = A.dirname(ct(import.meta.url));
 he.transports.file.level = "info";
 he.transports.file.fileName = "main.log";
 Object.assign(console, he.functions);
-process.env.APP_ROOT = A.join(et, "..");
-const fe = process.env.VITE_DEV_SERVER_URL, or = A.join(process.env.APP_ROOT, "dist-electron"), tt = A.join(process.env.APP_ROOT, "dist");
-process.env.VITE_PUBLIC = fe ? A.join(process.env.APP_ROOT, "public") : tt;
+process.env.APP_ROOT = A.join(tt, "..");
+const fe = process.env.VITE_DEV_SERVER_URL, or = A.join(process.env.APP_ROOT, "dist-electron"), rt = A.join(process.env.APP_ROOT, "dist");
+process.env.VITE_PUBLIC = fe ? A.join(process.env.APP_ROOT, "public") : rt;
 let O;
-function rt() {
-  O = new Be({
+function Be() {
+  O = new Je({
     icon: A.join(process.env.VITE_PUBLIC, "icon.png"),
     webPreferences: {
-      preload: A.join(et, "preload.mjs")
+      preload: A.join(tt, "preload.mjs")
     }
   }), process.platform === "darwin" && $.dock.setIcon(A.join(process.env.VITE_PUBLIC, "icon.png")), O.webContents.on("did-finish-load", () => {
     O == null || O.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
-  }), fe ? O.loadURL(fe) : O.loadFile(A.join(tt, "index.html"));
+  }), fe ? O.loadURL(fe) : O.loadFile(A.join(rt, "index.html"));
 }
 $.on("window-all-closed", () => {
   process.platform !== "darwin" && ($.quit(), O = null);
 });
-$.on("activate", () => {
-  Be.getAllWindows().length === 0 && rt();
-});
 $.whenReady().then(() => {
-  vt(), rt();
+  vt(), Be(), $.on("activate", () => {
+    Je.getAllWindows().length === 0 && Be();
+  });
 });
 export {
   or as MAIN_DIST,
-  tt as RENDERER_DIST,
+  rt as RENDERER_DIST,
   fe as VITE_DEV_SERVER_URL
 };

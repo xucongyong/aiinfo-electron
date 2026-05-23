@@ -69,17 +69,14 @@ app.on('window-all-closed', () => {
   }
 })
 
-app.on('activate', () => {
-  // On OS X it's common to re-create a window in the app when the
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow()
-  }
-})
-
-//app.whenReady().then(createWindow)
-
-
 app.whenReady().then(() => {
   registerIpcHandlers() // 注册所有 IPC 事件
   createWindow()
+
+  app.on('activate', () => {
+    // On OS X it's common to re-create a window in the app when the
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow()
+    }
+  })
 })
